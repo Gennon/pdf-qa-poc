@@ -1,10 +1,11 @@
 from llama_manager import LlamaManager
 
-llama_manager = LlamaManager('https://huggingface.co/Mozilla/TinyLlama-1.1B-Chat-v1.0-llamafile/blob/main/TinyLlama-1.1B-Chat-v1.0.Q5_K_M.llamafile')
-llama_manager.download_llamafile()
-llama_manager.make_executable()
+llama_manager = LlamaManager('https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf')
+llama_manager.download_model()
 llama_manager.start_llamafile()
 
 # # Check health
-print(llama_manager.check_health())
-# llama_manager.cleanup()
+#print(llama_manager.check_health())
+
+# Just to show that the cleanup works
+#llama_manager.cleanup()
