@@ -4,8 +4,8 @@ llama_manager = LlamaManager('https://huggingface.co/TheBloke/TinyLlama-1.1B-Cha
 llama_manager.download_model()
 llama_manager.start_llamafile()
 
-# # Check health
-#print(llama_manager.check_health())
+# # Check healt
+llama_manager.check_health()
 
 # Just to show that the cleanup works
 #llama_manager.cleanup()

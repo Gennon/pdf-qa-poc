@@ -10,6 +10,7 @@ class LlamaManager:
         self.model_url = model_url
         self.download_dir = download_dir
         self.model_path = os.path.join(download_dir, os.path.basename(model_url))
+        self.pid_file_path = os.path.join(download_dir, os.path.basename(model_url) + '.pid')
         self.pid = None
         self.port = port
         self.embedding = embedding
@@ -85,6 +86,16 @@ class LlamaManager:
             self.logger.error(f'Llamafile does not exist: {self.lamafile_path}')
             return
         
+        # Check if the file is already executable
+        if platform.system() == 'Windows' and os.path.exists(self.lamafile_path + '.exe'):
+            self.lamafile_path += '.exe'
+            self.logger.info(f'Llamafile is already executable: {self.lamafile_path}')
+            return
+        elif os.access(self.lamafile_path, os.X_OK):
+            self.logger.info(f'Llamafile is already executable: {self.lamafile_path}')
+            return
+        
+        
         if platform.system() == 'Windows':
             # Make a copy of the llamafile with a .exe extension
             shutil.copy(self.lamafile_path, self.lamafile_path + '.exe')
@@ -104,23 +115,25 @@ class LlamaManager:
             self.logger.error(f'Model does not exist: {self.model_path}')
             return
 
-        args = self.create_args()
+        args = self.create_args()        
+        log_file_path = os.path.join(self.download_dir, os.path.basename(self.model_url) + '.server.log')
+        log_file = open(log_file_path, 'w')
         self.process = subprocess.Popen(
-            [self.lamafile_path] + args, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE,
-            creationflags=subprocess.DETACHED_PROCESS)
+            args,
+            stdout=log_file,
+            stderr=log_file
+        )
         self.pid = self.process.pid
         self.create_pid_file()
         self.logger.info(f'Started llamafile with PID: {self.pid}')
         self.logger.info(f'Llamafile running on port: {self.port}')
 
 
-    def create_args(self) -> list[str]:        
-        args = ['-m', str(self.model_path),'--port', str(self.port), '--server', '--nobrowser']
+    def create_args(self) -> list[str]:
+        args = [str(self.lamafile_path), '-m', str(self.model_path), '--port ' + str(self.port), '--server', '--nobrowser']
         if self.embedding:
             args.append('--embedding')
-        return args
+        return ' '.join(args)
     
     
     def check_health(self):
@@ -149,15 +162,15 @@ class LlamaManager:
             self.logger.info(f'Killed process with PID: {self.pid}')
 
 
-    def create_pid_file(self):
-        with open('llamafile.pid', 'w') as file:
+    def create_pid_file(self):        
+        with open(self.pid_file_path, 'w') as file:
             file.write(str(self.pid))
 
 
     def read_pid_file(self):
-        if not os.path.exists('llamafile.pid'):
+        if not os.path.exists(self.pid_file_path):
             return
-        with open('llamafile.pid', 'r') as file:
+        with open(self.pid_file_path, 'r') as file:
             self.pid = int(file.read())
 
 
