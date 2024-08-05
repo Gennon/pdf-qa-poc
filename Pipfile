@@ -9,6 +9,7 @@ langchain-community = "*"
 gpt4all = "*"
 langchain-chroma = "*"
 pypdf = "*"
+requests = "*"
 
 [dev-packages]
 ipykernel = "*"
